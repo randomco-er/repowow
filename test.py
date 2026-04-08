@@ -32,21 +32,28 @@ async def main():
     await drone.offboard.start()
     print("start offboard")
 
+
     await drone.action.takeoff() 
     print("takeoff")
 
     await asyncio.sleep(5)
     print('sleep')
 
-    print('check if 5m')
+    
+    print('set alt to alt after waiting 5 sec')
     async for coords in drone.telemetry.position_velocity_ned():
-        print(-1* coords.position.down_m)
-        await drone.offboard.set_position_ned(PositionNedYaw(0.0, -5.0, -1* coords.position.down_m, 0.0))
+        altitude = coords.position.down_m
         break
+
+    await drone.offboard.set_position_ned(PositionNedYaw(0.0, 0.0, altitude, 0.0))
+    await drone.offboard.start()
+    print("Offboard started")
+
+    await drone.offboard.set_position_ned(PositionNedYaw(0.0, -5.0, altitude, 0.0))
 
     async for coords in drone.telemetry.position_velocity_ned():
         print(-1* coords.position.east_m)
-        if -5.1 < -1*coords.position.east_m < -4.9:
+        if -5.1 < coords.position.east_m < -4.9:
             break
         else:
             continue
